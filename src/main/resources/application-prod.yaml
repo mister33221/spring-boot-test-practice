@@ -1,0 +1,23 @@
+spring:
+  datasource:
+    url: jdbc:mysql://prod-db-url:3306/proddb
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: prod
+    password: prod123
+  jpa:
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+    hibernate:
+      ddl-auto: validate # 僅驗證資料表結構
+    show-sql: false
+    open-in-view: false
+    generate-ddl: false
+    defer-datasource-initialization: false
+
+# 生產環境禁用 H2 Console 和 Swagger
+h2:
+  console:
+    enabled: false
+
+springdoc:
+  swagger-ui:
+    enabled: false

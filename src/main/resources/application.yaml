@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: test-practice
+  profiles:
+    active: dev # ???? dev Profile
