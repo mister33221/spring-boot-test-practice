@@ -1,9 +1,11 @@
 package com.kai.test_practice.services;
 
+import com.kai.test_practice.entities.CreateUserRequest;
 import com.kai.test_practice.entities.User;
 import com.kai.test_practice.exceptions.UserNotFoundException;
 import com.kai.test_practice.repositories.UserRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 
@@ -23,9 +25,19 @@ public class UserService {
     }
 
     // 創建新使用者
-    public User createUser(User user) {
-        user.setCode("USER-" + System.currentTimeMillis());
-        return userRepository.save(user);
+    public synchronized  User createUser(CreateUserRequest userRequest) {
+        // 檢查 email 是否已存在
+        if (userRepository.existsByEmail(userRequest.getEmail())) {
+            throw new IllegalArgumentException("Email already exists: " + userRequest.getEmail());
+        }
+
+        // 檢查 name 長度
+        if (!StringUtils.hasText(userRequest.getName()) || userRequest.getName().length() < 3 || userRequest.getName().length() > 50) {
+            throw new IllegalArgumentException("Name length must be between 3 and 50 characters");
+        }
+
+        User newUser = User.createUser(userRequest);
+        return userRepository.save(newUser);
     }
 
     // 通過ID獲取使用者

@@ -18,6 +18,6 @@ spring:
     defer-datasource-initialization: true
 
 # Swagger 開發環境啟用
-springdoc:
-  swagger-ui:
-    path: /swagger-ui.html
+#springdoc:
+#  swagger-ui:
+#    path: /swagger-ui.html

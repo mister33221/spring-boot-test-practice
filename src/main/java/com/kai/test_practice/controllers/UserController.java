@@ -1,7 +1,10 @@
 package com.kai.test_practice.controllers;
 
+import com.kai.test_practice.entities.CreateUserRequest;
 import com.kai.test_practice.entities.User;
 import com.kai.test_practice.services.UserService;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -28,7 +31,7 @@ public class UserController {
     }
 
     @PostMapping
-    public User createUser(@RequestBody User user) {
+    public User createUser(@RequestBody @Valid CreateUserRequest user) {
         return userService.createUser(user);
     }
 
