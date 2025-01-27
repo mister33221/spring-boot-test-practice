@@ -31,11 +31,6 @@ public class UserService {
             throw new IllegalArgumentException("Email already exists: " + userRequest.getEmail());
         }
 
-        // 檢查 name 長度
-        if (!StringUtils.hasText(userRequest.getName()) || userRequest.getName().length() < 3 || userRequest.getName().length() > 50) {
-            throw new IllegalArgumentException("Name length must be between 3 and 50 characters");
-        }
-
         User newUser = User.createUser(userRequest);
         return userRepository.save(newUser);
     }

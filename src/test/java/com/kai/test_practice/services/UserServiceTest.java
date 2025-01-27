@@ -8,6 +8,7 @@ import com.kai.test_practice.utils.UserDataGenerator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Profile;
 import org.springframework.test.context.jdbc.Sql;
@@ -15,15 +16,14 @@ import org.springframework.test.context.jdbc.Sql;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.*;
-
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.*;
 
 
 @SpringBootTest
@@ -32,8 +32,13 @@ import java.util.concurrent.TimeUnit;
 @Sql(scripts = "/sql/cleanup.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
 public class UserServiceTest {
 
-    private final UserRepository userRepository = Mockito.mock(UserRepository.class);
-    private final UserService userService = new UserService(userRepository);
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private UserService userService;
+
+    private final UserRepository mockUserRepository = Mockito.mock(UserRepository.class);
+    private final UserService mockUserService = new UserService(mockUserRepository);
 
     private Set<String> emailSet; // 用於模擬資料庫的 email 集合
 
@@ -42,13 +47,13 @@ public class UserServiceTest {
         emailSet = new HashSet<>();
 
         // 模擬 existsByEmail 行為
-        when(userRepository.existsByEmail(anyString())).thenAnswer(invocation -> {
+        when(mockUserRepository.existsByEmail(anyString())).thenAnswer(invocation -> {
             String email = invocation.getArgument(0);
             return emailSet.contains(email); // 判斷 email 是否已存在
         });
 
         // 模擬 save 行為
-        when(userRepository.save(any(User.class))).thenAnswer(invocation -> {
+        when(mockUserRepository.save(any(User.class))).thenAnswer(invocation -> {
             User user = invocation.getArgument(0);
             if (!emailSet.add(user.getEmail())) {
                 throw new IllegalArgumentException("Email already exists: " + user.getEmail());
@@ -60,11 +65,11 @@ public class UserServiceTest {
     @Test
     public void testUserNotFoundException() {
         // 模擬找不到使用者
-        when(userRepository.findById(999L)).thenReturn(Optional.empty());
+        when(mockUserRepository.findById(999L)).thenReturn(Optional.empty());
 
         // 驗證是否拋出 UserNotFoundException
         UserNotFoundException exception = assertThrows(UserNotFoundException.class, () -> {
-            userService.getUserById(999L);
+            mockUserService.getUserById(999L);
         });
         assertEquals("User with ID 999 not found.", exception.getMessage());
     }
@@ -72,37 +77,16 @@ public class UserServiceTest {
     @Test
     public void testCreateUserEmailAlreadyExists() {
         // 模擬 email 已存在
-        when(userRepository.existsByEmail("existing@example.com")).thenReturn(true);
+        when(mockUserRepository.existsByEmail("existing@example.com")).thenReturn(true);
 
         // 驗證是否拋出 IllegalArgumentException
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
             CreateUserRequest request = new CreateUserRequest();
             request.setName("Test User");
             request.setEmail("existing@example.com");
-            userService.createUser(request);
+            mockUserService.createUser(request);
         });
         assertEquals("Email already exists: existing@example.com", exception.getMessage());
-    }
-
-    @Test
-    public void testCreateUserInvalidNameLength() {
-        // 驗證 name 長度過短
-        IllegalArgumentException shortNameException = assertThrows(IllegalArgumentException.class, () -> {
-            CreateUserRequest request = new CreateUserRequest();
-            request.setName("ab");
-            request.setEmail("valid@example.com");
-            userService.createUser(request);
-        });
-        assertEquals("Name length must be between 3 and 50 characters", shortNameException.getMessage());
-
-        // 驗證 name 長度過長
-        IllegalArgumentException longNameException = assertThrows(IllegalArgumentException.class, () -> {
-            CreateUserRequest request = new CreateUserRequest();
-            request.setName("a".repeat(51));
-            request.setEmail("valid@example.com");
-            userService.createUser(request);
-        });
-        assertEquals("Name length must be between 3 and 50 characters", longNameException.getMessage());
     }
 
     @Test
@@ -111,10 +95,10 @@ public class UserServiceTest {
         List<User> mockUsers = UserDataGenerator.generateUsers(10000);
 
         // 模擬 Repository 返回這些數據
-        when(userRepository.findAll()).thenReturn(mockUsers);
+        when(mockUserRepository.findAll()).thenReturn(mockUsers);
 
         // 測試 Service 層邏輯
-        List<User> result = userService.getAllUsers();
+        List<User> result = mockUserService.getAllUsers();
 
         // 驗證數據量與結果一致
         assertEquals(10000, result.size());
@@ -122,7 +106,7 @@ public class UserServiceTest {
         assertEquals("user1@example.com", result.get(0).getEmail());
 
         // 確保 Repository 方法被調用了一次
-        verify(userRepository, times(1)).findAll();
+        verify(mockUserRepository, times(1)).findAll();
     }
 
     @Test
@@ -137,7 +121,7 @@ public class UserServiceTest {
                 request.setEmail("user@example.com"); // 模擬多個執行緒使用相同 email
 
                 try {
-                    userService.createUser(request);
+                    mockUserService.createUser(request);
                 } catch (Exception ignored) {
                     // 忽略異常
                 }
@@ -148,7 +132,8 @@ public class UserServiceTest {
         executorService.awaitTermination(1, TimeUnit.MINUTES);
 
         // 驗證 save 方法只被成功調用一次
-        verify(userRepository, times(1)).save(any(User.class));
+        verify(mockUserRepository, times(1)).save(any(User.class));
     }
+
 
 }
