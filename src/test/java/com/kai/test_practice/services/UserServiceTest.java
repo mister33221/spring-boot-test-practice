@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Profile;
 import org.springframework.test.context.jdbc.Sql;
 
 import java.util.HashSet;
@@ -27,15 +26,9 @@ import static org.mockito.Mockito.*;
 
 
 @SpringBootTest
-@Profile({"dev", "test"})
 @Sql(scripts = "/sql/test-data.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
 @Sql(scripts = "/sql/cleanup.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
 public class UserServiceTest {
-
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    private UserService userService;
 
     private final UserRepository mockUserRepository = Mockito.mock(UserRepository.class);
     private final UserService mockUserService = new UserService(mockUserRepository);
