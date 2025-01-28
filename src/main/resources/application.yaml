@@ -20,7 +20,4 @@ spring:
     generate-ddl: true
     defer-datasource-initialization: true
 
-# 測試環境禁用 Swagger
-springdoc:
-  swagger-ui:
-    enabled: false
+# Swagger path: http://localhost:8080/swagger-ui/index.html

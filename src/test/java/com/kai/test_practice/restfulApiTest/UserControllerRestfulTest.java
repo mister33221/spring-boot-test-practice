@@ -1,5 +1,7 @@
-package com.kai.test_practice.controllers;
+package com.kai.test_practice.restfulApiTest;
 
+import com.kai.test_practice.repositories.UserRepository;
+import com.kai.test_practice.services.UserService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -23,16 +25,17 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @Sql(scripts = "/sql/test-data.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
 @Sql(scripts = "/sql/cleanup.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
-public class UserControllerTest {
+public class UserControllerRestfulTest {
+
+//    注意
+//    在同一個測試類中同時使用 @MockBean 和 @Autowired 注入同一個類型的 Bean（例如 UserService），
+//    會導致 測試中的行為不一致 或 出現衝突，
+//    因為 Spring Boot 測試框架會優先使用 @MockBean 替換掉 Spring Context 中的該類型 Bean。
 
     @Autowired
     private MockMvc mockMvc;
 
-//    @Test
-//    public void testGetAllUsers() throws Exception {
-//
-//    }
-
+//    Integration test
     @Test
     public void testCreateAndGetUsers() throws Exception {
         // 創建使用者
@@ -40,7 +43,7 @@ public class UserControllerTest {
                         .contentType("application/json")
                         .content("{\"name\": \"Test User\", \"email\": \"test@example.com\"}"))
                 .andDo(print()) // 打印 API 響應內容
-                .andExpect(status().isOk());
+                .andExpect(status().isCreated());
 
         // 查詢所有使用者，而其中應該包含剛剛創建的使用者
         mockMvc.perform(get("/users"))
@@ -49,26 +52,8 @@ public class UserControllerTest {
                 .andExpect(jsonPath("$[*].email").value(org.hamcrest.Matchers.hasItem("test@example.com")));
     }
 
-    @Test
-    public void testGetUserByIdNotFound() throws Exception {
-        mockMvc.perform(get("/users/999")) // 假設 ID 999 不存在
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.error").value("User not found"))
-                .andExpect(jsonPath("$.message").value("User with ID 999 not found."));
-    }
-
-    @Test
-    public void testCreateUserValidationError() throws Exception {
-        // 缺少 email
-        mockMvc.perform(post("/users")
-                        .contentType("application/json")
-                        .content("{\"name\": \"Invalid User\"}"))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error").value("Validation failed"))
-                .andExpect(jsonPath("$.message").value("Email is required"));
-    }
-
-    //    為什麼在h2 db 中並沒有看到真實的資料被建立，但我使用repository 去查，確實db裡面有資料?
+//    Integration test
+//    為什麼在h2 db 中並沒有看到真實的資料被建立，但我使用repository 去查，確實db裡面有資料?
     @ParameterizedTest
     @MethodSource("provideCreateUserData")
     public void testCreateUserWithMethodSource(String name, String email, String errorType) throws Exception {
@@ -98,7 +83,7 @@ public class UserControllerTest {
                                 .contentType("application/json")
                                 .content(request))
                         .andDo(print())
-                        .andExpect(status().isOk())
+                        .andExpect(status().isCreated())
                         .andExpect(jsonPath("$.name").value(name))
                         .andExpect(jsonPath("$.email").value(email));
                 break;
@@ -106,6 +91,7 @@ public class UserControllerTest {
                 throw new IllegalArgumentException("Invalid error type: " + errorType);
         }
     }
+
     private static Stream<Arguments> provideCreateUserData() {
         return Stream.of(
                 Arguments.of("John", "john@example.com", "work"),   // 有效數據
@@ -150,7 +136,7 @@ public class UserControllerTest {
                                 .contentType("application/json")
                                 .content(request))
                         .andDo(print())
-                        .andExpect(status().isOk())
+                        .andExpect(status().isCreated())
                         .andExpect(jsonPath("$.name").value(name))
                         .andExpect(jsonPath("$.email").value(email));
                 break;
@@ -159,4 +145,5 @@ public class UserControllerTest {
                 throw new IllegalArgumentException("Invalid error type: " + errorType);
         }
     }
+
 }

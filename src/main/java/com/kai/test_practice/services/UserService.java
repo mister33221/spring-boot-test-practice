@@ -5,7 +5,6 @@ import com.kai.test_practice.entities.User;
 import com.kai.test_practice.exceptions.UserNotFoundException;
 import com.kai.test_practice.repositories.UserRepository;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 
 import java.util.List;
 
