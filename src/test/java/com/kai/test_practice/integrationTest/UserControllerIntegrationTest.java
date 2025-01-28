@@ -1,7 +1,5 @@
-package com.kai.test_practice.restfulApiTest;
+package com.kai.test_practice.integrationTest;
 
-import com.kai.test_practice.repositories.UserRepository;
-import com.kai.test_practice.services.UserService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -25,7 +23,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @Sql(scripts = "/sql/test-data.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
 @Sql(scripts = "/sql/cleanup.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
-public class UserControllerRestfulTest {
+public class UserControllerIntegrationTest {
 
 //    注意
 //    在同一個測試類中同時使用 @MockBean 和 @Autowired 注入同一個類型的 Bean（例如 UserService），
