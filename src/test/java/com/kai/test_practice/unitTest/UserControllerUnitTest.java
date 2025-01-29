@@ -3,7 +3,6 @@ package com.kai.test_practice.unitTest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kai.test_practice.entities.CreateUserRequest;
 import com.kai.test_practice.entities.User;
-import com.kai.test_practice.repositories.UserRepository;
 import com.kai.test_practice.services.UserService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,7 +13,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Arrays;
@@ -31,6 +29,11 @@ public class UserControllerUnitTest {
 
     @Autowired // Spring 自動注入 MockMvc 實例，用於發送模擬的 HTTP 請求。
     private MockMvc mockMvc;
+
+//    注意
+//    在同一個測試類中同時使用 @MockBean 和 @Autowired 注入同一個類型的 Bean（例如 UserService），
+//    會導致 測試中的行為不一致 或 出現衝突，
+//    因為 Spring Boot 測試框架會優先使用 @MockBean 替換掉 Spring Context 中的該類型 Bean。
 
 //    @MockBean // 注意這個 Annotation 已經在 SpringBoot 3.4.0 版本中被棄用，改用 @MockitoBean
     @MockitoBean// 使用 Mockito 模擬一個 Service 層的 Bean，將其注入到 Spring 測試上下文中。
